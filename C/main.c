@@ -193,8 +193,8 @@ static void fft_2D(double complex buffer[], size_t width, size_t height) {
     transpose(buffer, width, height);
 
     // Now do the columns
-    for (int i = 0; i < height; i++) {
-        fft_1D(buffer+i*width, width);
+    for (int i = 0; i < width; i++) {
+        fft_1D(buffer+i*height, height);
     }
 
     // Transpose back
