@@ -1,10 +1,15 @@
-#include<stddef.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include<assert.h>
-#include<string.h>
-#include<complex.h>
-#include<math.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <complex.h>
+#include <math.h>
+
+void die(const char *msg) {
+    printf("%s\n", msg);
+    exit(1);
+}
 
 /* ------------------------ */
 /*          IMAGE           */
@@ -53,28 +58,28 @@ static Image *load_pgm(char *path) {
     char buf[BUF_LEN];
 
     FILE *fp = fopen(path, "rb");
-    if (fp == NULL) return NULL;
+    if (fp == NULL) die("Couldn't open file");
 
     char *err = fgets(buf, BUF_LEN, fp);
-    if (err == NULL) return NULL;
+    if (err == NULL) die("Couldn't read filetype from file");
     // Assert if type is not graymap, fuck color
-    if (strncmp(buf, "P5\n", 3) != 0) return NULL;
+    if (strncmp(buf, "P5\n", 3) != 0) die("Filetype isn't correct");
 
     // Skip Comments
     do {
         char *err = fgets(buf, BUF_LEN, fp);
-        if (err == NULL) return NULL;
+        if (err == NULL) die("Error reading past filetype");
     } while (strncmp(buf, "#", 1) == 0);
 
     // Read width and height
     int width, height;
     int c = sscanf(buf, "%u %u", &width, &height);
-    if (c < 2) return NULL;
+    if (c < 2) die("Couldn't read width and height");
 
     // Read maximum value
     int max;
     c = fscanf(fp, "%u", &max);
-    if (c < 2 && max != 255) return NULL;
+    if (c < 2 && max != 255) die("Couldn't read maximum value");
     // Skip one spacer
     fseek(fp, 1, SEEK_CUR);
 
@@ -84,7 +89,7 @@ static Image *load_pgm(char *path) {
     size_t pc = fread(img->pixels, sizeof(img_byte), width*height, fp);
     if (pc < width*height) {
         delete_image(img);
-        return NULL;
+        die("Coudln't read data from Image");
     }
 
     fclose(fp);
@@ -94,7 +99,7 @@ static Image *load_pgm(char *path) {
 
 static void save_pgm(char *path, Image *img) {
     FILE *fp = fopen(path, "wb");
-    if (fp == NULL) return;
+    if (fp == NULL) die("Couldn't open file for saving");
 
     fprintf(fp, "P5\n%zu %zu\n255\n", img->width, img->height);
 
@@ -208,7 +213,7 @@ Image *fft(Image *img) {
     assert((img->height != 0) && ((img->height & (img->height - 1)) == 0));
 
     double complex *buffer = calloc(img->width * img->height, sizeof(double complex));
-    for (int i = 0; i < img->height * img->width; i++) buffer[i] = img->pixels[i]; 
+    for (int i = 0; i < img->height * img->width; i++) buffer[i] = img->pixels[i];
 
     fft_2D(buffer, img->width, img->height);
 
@@ -239,7 +244,6 @@ Image *fft(Image *img) {
 
     return transformed;
 }
-
 
 int main() {
     Image *img = load_pgm("../cameraman.pgm");
