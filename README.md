@@ -6,3 +6,5 @@ Every example has a build file for linux:
 ``` bash
 ./build.sh && ./build/fft
 ```
+## TODO
+- [ ] Fix the Fortran example, because it currently eats 10s
